@@ -1,29 +1,34 @@
-<script lang="ts">
-  import { onMount } from 'svelte';
+<script>
 
-  // type Note = { id: string; blob: string; };
-  // type StoredData = { note_array: Note[]; };
+  import { onMount } from 'svelte';
 
   let key = '';
   let value = '';
   let noteArray = [];
   let localStorageKeys = [];
 
+  // Load all keys from LocalStorage
   function loadLocalStorageKeys() {
     localStorageKeys = Object.keys(localStorage);
   }
 
+  // Save data to LocalStorage in note_array format
   function saveData() {
-    const lines = value.split('\n').filter((line) => line.trim() !== '');
+    // Split the textarea input into lines, filtering out any empty lines
+    const lines = value.split('\n').filter(line => line.trim() !== '');
 
+    // Ensure lines are greater than 0 before mapping
     if (lines.length > 0) {
-      const newNoteArray = lines.map((line, index) => ({
-        id: String(index + 1).padStart(4, '0'),
-        blob: line.trim()
-      }));
+      const noteArray = lines.map((line, index) => {
+        console.log("Processing line:", line, "at index:", index+1);
+        return{
+          id: String(index+1).padStart(4, '0'), // Ensure the ID is always 4 digits, starting from "0001"
+          blob: line.trim() // Trim any whitespace around each line
+        }
+      });
 
       const jsonValue = {
-        note_array: newNoteArray
+        note_array: noteArray
       };
 
       localStorage.setItem(key, JSON.stringify(jsonValue));
@@ -31,12 +36,13 @@
       value = '';
       alert('Data saved successfully!');
 
-      loadLocalStorageKeys();
+      loadLocalStorageKeys(); // Update the list of keys
     } else {
       alert('Please enter at least one line of text.');
     }
   }
 
+  // Retrieve data from LocalStorage based on the selected key
   function retrieveData(selectedKey) {
     const storedValue = localStorage.getItem(selectedKey);
     if (storedValue) {
@@ -59,9 +65,11 @@
     }
   }
   
-  onMount(()=> {
+  // Initialize the list of keys on component mount
+  onMount(() => {
     loadLocalStorageKeys();
   });
+
 </script>
 
 <div>
